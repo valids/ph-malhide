@@ -1,10 +1,9 @@
 #include "main.h"
-#include <phdk.h>
 #include <time.h>
 #include <windows.h>
 #include "MinHook.h"
 
-LOGICAL DllMain(
+BOOL DllMain(
 	__in HINSTANCE Instance,
 	__in ULONG Reason,
 	__reserved PVOID Reserved
@@ -14,26 +13,6 @@ LOGICAL DllMain(
 	{
 	case DLL_PROCESS_ATTACH:
 		{
-			PPH_PLUGIN_INFORMATION info;
-
-			PluginInstance = PhRegisterPlugin(L"TT.MalHide", Instance, &info);
-
-			if (!PluginInstance)
-				return FALSE;
-
-			info->DisplayName = L"MalHide";
-			info->Author = L"TETYYS";
-			info->Description = L"Changes window properties to prevent malware killing ProcessHacker, however you will not able to see user running PH.";
-			info->HasOptions = FALSE;
-			info->Url = L"http://wj32.org/processhacker/forums/viewtopic.php?f=18&t=1301&p=5731";
-
-			PhRegisterCallback(
-				PhGetPluginCallback(PluginInstance, PluginCallbackUnload),
-				UnloadCallback,
-				NULL,
-				&PluginUnloadCallbackRegistration
-				);
-
 			RANGE range;
 			RangesSize = 27;
 			Ranges = malloc(sizeof(RANGE) * RangesSize);
@@ -67,28 +46,24 @@ LOGICAL DllMain(
 			ClassName = RandomString();
 
 			if (MH_Initialize() != MH_OK)
-				return 1;
+				return FALSE;
 
 			if (MH_CreateHook(&CreateWindowExW, &H_CreateWindowExW, (LPVOID*)(&O_CreateWindow)) != MH_OK || MH_EnableHook(&CreateWindowExW) != MH_OK)
-				return 1;
+				return FALSE;
 
 			if (MH_CreateHook(&RegisterClassExW, &H_RegisterClassExW, (LPVOID*)(&O_RegisterClass)) != MH_OK || MH_EnableHook(&RegisterClassExW) != MH_OK)
-				return 1;
+				return FALSE;
 
 			if (MH_CreateHook(&FindWindowExW, &H_FindWindowExW, (LPVOID*)(&O_FindWindow)) != MH_OK || MH_EnableHook(&FindWindowExW) != MH_OK)
-				return 1;
+				return FALSE;
 		}
+		break;
+
+	case DLL_PROCESS_DETACH:
+		MH_Uninitialize();
 		break;
 	}
 	return TRUE;
-}
-
-VOID NTAPI UnloadCallback(
-	__in_opt PVOID Parameter,
-	__in_opt PVOID Context
-	)
-{
-	MH_Uninitialize();
 }
 
 HWND WINAPI	H_FindWindowExW(
@@ -149,10 +124,7 @@ HWND WINAPI H_CreateWindowExW(
 
 WCHAR* RandomString() {
 	ULONG range = rand() % RangesSize;
-	ULONG len;
-	do {
-		len = rand() % 100;
-	} while (len == 0);
+	ULONG len = rand() % 100 + 1;
 	WCHAR* ustr = calloc(sizeof(WCHAR), len + 1);
 	for (ULONG i = 0; i < len; i++) {
 		ustr[i] = (rand() % (Ranges[range].To - Ranges[range].From + 1)) + Ranges[range].From;

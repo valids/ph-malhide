@@ -1,6 +1,7 @@
 #pragma once
 
-#include <phdk.h>
+#include <wtypes.h>
+#include <windef.h>
 
 #define ORIGINAL_CLASS_NAME L"ProcessHacker"
 
@@ -80,9 +81,6 @@ WCHAR *RandomString();
 
 WCHAR *ClassName;
 HWND MainWindowHandle;
-
-PPH_PLUGIN PluginInstance;
-PH_CALLBACK_REGISTRATION PluginUnloadCallbackRegistration;
 
 typedef struct _RANGE {
 	ULONG From;
