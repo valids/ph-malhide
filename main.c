@@ -69,6 +69,7 @@ BOOL DllMain(
 BOOL CheckClassName(_In_opt_ LPCWSTR lpszClass)
 {
 	PCWSTR ORIGINAL_CLASS_NAME = L"ProcessHacker";
+	if ((DWORD)lpszClass >> 16 == 0) return FALSE; // not a class name
 	return lpszClass && wcscmp(lpszClass, ORIGINAL_CLASS_NAME) == 0;
 }
 
