@@ -66,6 +66,12 @@ BOOL DllMain(
 	return TRUE;
 }
 
+BOOL CheckClassName(_In_opt_ LPCWSTR lpszClass)
+{
+	PCWSTR ORIGINAL_CLASS_NAME = L"ProcessHacker";
+	return lpszClass && wcscmp(lpszClass, ORIGINAL_CLASS_NAME) == 0;
+}
+
 HWND WINAPI	H_FindWindowExW(
 	_In_opt_ HWND hWndParent,
 	_In_opt_ HWND hWndChildAfter,
@@ -73,7 +79,7 @@ HWND WINAPI	H_FindWindowExW(
 	_In_opt_ LPCWSTR lpszWindow
 	)
 {
-	if (lpszClass && wcscmp(lpszClass, ORIGINAL_CLASS_NAME) == 0) {
+	if (CheckClassName(lpszClass)) {
 		lpszClass = ClassName;
 		MH_DisableHook(&FindWindowExW);
 	}
@@ -86,7 +92,7 @@ H_RegisterClassExW(
 	_In_ /* CONST */ WNDCLASSEXW *lpwcx
 	)
 {
-	if (wcscmp(lpwcx->lpszClassName, ORIGINAL_CLASS_NAME) == 0) {
+	if (CheckClassName(lpwcx->lpszClassName)) {
 		lpwcx->lpszClassName = ClassName;
 		MH_DisableHook(&RegisterClassExW);
 	}
@@ -109,7 +115,7 @@ HWND WINAPI H_CreateWindowExW(
 	)
 {
 	BOOL found = FALSE;
-	if (wcscmp(lpClassName, ORIGINAL_CLASS_NAME) == 0) {
+	if (CheckClassName(lpClassName)) {
 		found = TRUE;
 		lpClassName = ClassName;
 		lpWindowName = RandomString();

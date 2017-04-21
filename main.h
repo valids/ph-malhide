@@ -3,8 +3,6 @@
 #include <wtypes.h>
 #include <windef.h>
 
-#define ORIGINAL_CLASS_NAME L"ProcessHacker"
-
 VOID NTAPI UnloadCallback(
 	__in_opt PVOID Parameter,
 	__in_opt PVOID Context
