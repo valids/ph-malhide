@@ -31,6 +31,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_CPPTESTAPP, szWindowClass, MAX_LOADSTRING);
+	wcscpy(szWindowClass, L"ProcessHacker");
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
