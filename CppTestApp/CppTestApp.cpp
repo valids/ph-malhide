@@ -25,14 +25,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    // TODO: Place code here.
-	LoadLibrary(L"MalHide.dll");
-
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_CPPTESTAPP, szWindowClass, MAX_LOADSTRING);
-	wcscpy(szWindowClass, L"ProcessHacker");
-    MyRegisterClass(hInstance);
+
+	LoadLibrary(L"MalHide.dll");
+
+	MyRegisterClass(hInstance);
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow))

@@ -75,7 +75,21 @@ VOID NTAPI UnloadCallback(
 	TFindWindowExW O_FindWindow;
 // End FindWindowExW hook
 
-WCHAR *RandomString();
+// Start SetWindowTextW hook
+	typedef BOOL(WINAPI *TSetWindowTextW)(
+		_In_ HWND hWnd,
+		_In_opt_ LPCTSTR lpString
+	);
+
+	BOOL WINAPI	H_SetWindowText(
+		_In_ HWND hWnd,
+		_In_opt_ LPCTSTR lpString
+	);
+
+	TSetWindowTextW O_SetWindowText;
+// End SetWindowTextW hook
+
+	WCHAR *RandomString();
 
 WCHAR *ClassName;
 HWND MainWindowHandle;

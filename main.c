@@ -13,7 +13,6 @@ BOOL DllMain(
 	{
 	case DLL_PROCESS_ATTACH:
 		{
-			RANGE range;
 			RangesSize = 27;
 			Ranges = malloc(sizeof(RANGE) * RangesSize);
 			Ranges[0] =	 (RANGE) { .From = 0x0021, .To = 0x007E };
@@ -51,6 +50,9 @@ BOOL DllMain(
 			if (MH_CreateHook(&CreateWindowExW, &H_CreateWindowExW, (LPVOID*)(&O_CreateWindow)) != MH_OK || MH_EnableHook(&CreateWindowExW) != MH_OK)
 				return FALSE;
 
+			if (MH_CreateHook(&SetWindowTextW, &H_SetWindowText, (LPVOID*)(&O_SetWindowText)) != MH_OK || MH_EnableHook(&SetWindowTextW) != MH_OK)
+				return FALSE;
+
 			if (MH_CreateHook(&RegisterClassExW, &H_RegisterClassExW, (LPVOID*)(&O_RegisterClass)) != MH_OK || MH_EnableHook(&RegisterClassExW) != MH_OK)
 				return FALSE;
 
@@ -70,7 +72,9 @@ BOOL CheckClassName(_In_opt_ LPCWSTR lpszClass)
 {
 	PCWSTR ORIGINAL_CLASS_NAME = L"ProcessHacker";
 	if ((DWORD)lpszClass >> 16 == 0) return FALSE; // not a class name
-	return lpszClass && wcscmp(lpszClass, ORIGINAL_CLASS_NAME) == 0;
+	
+	return TRUE; // Works for first window created 
+	//return lpszClass && wcscmp(lpszClass, ORIGINAL_CLASS_NAME) == 0;
 }
 
 HWND WINAPI	H_FindWindowExW(
@@ -87,6 +91,7 @@ HWND WINAPI	H_FindWindowExW(
 	return O_FindWindow(hWndParent, hWndChildAfter, lpszClass, lpszWindow);
 }
 
+BOOL ClassRegistered = FALSE;
 ATOM
 WINAPI
 H_RegisterClassExW(
@@ -96,6 +101,7 @@ H_RegisterClassExW(
 	if (CheckClassName(lpwcx->lpszClassName)) {
 		lpwcx->lpszClassName = ClassName;
 		MH_DisableHook(&RegisterClassExW);
+		ClassRegistered = TRUE;
 	}
 	return O_RegisterClass(lpwcx);
 }
@@ -118,7 +124,7 @@ HWND WINAPI H_CreateWindowExW(
 	BOOL found = FALSE;
 	if (CheckClassName(lpClassName)) {
 		found = TRUE;
-		lpClassName = ClassName;
+		if (ClassRegistered) lpClassName = ClassName;
 		lpWindowName = RandomString();
 	}
 	HWND ret = O_CreateWindow(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
@@ -127,6 +133,15 @@ HWND WINAPI H_CreateWindowExW(
 		MH_DisableHook(&CreateWindowExW);
 	}
 	return ret;
+}
+
+BOOL WINAPI	H_SetWindowText(
+	_In_ HWND hWnd,
+	_In_opt_ LPCTSTR lpString)
+{
+	BOOL result = O_SetWindowText(hWnd, RandomString());
+	MH_DisableHook(&SetWindowText);
+	return result;
 }
 
 WCHAR* RandomString() {
